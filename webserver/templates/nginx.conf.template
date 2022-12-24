@@ -35,6 +35,19 @@ server {
 	#}
 }
 
+root /var/www/html/pub;
+
+# fastcgi buffers for php-fpm #
+fastcgi_buffers 1024 4k;
+fastcgi_buffer_size 32k;
+fastcgi_busy_buffers_size 32k;
+# nginx buffers #
+proxy_buffering	on;
+proxy_buffer_size   128k;
+proxy_buffers   4 256k;
+proxy_busy_buffers_size   256k;
+# rest of the config below #
+ 
 server {
 	#listen 443 ssl http2;
 	#listen [::]:443 ipv6only=on ssl http2;
@@ -45,12 +58,7 @@ server {
 	#ssl_certificate_key /etc/letsencrypt/live/${NGINX_HOST}/privkey.pem;
 	#ssl_trusted_certificate /etc/letsencrypt/live/${NGINX_HOST}/chain.pem;
 	#ssl_dhparam /etc/letsencrypt/ssl-dhparam.pem;
-	include /etc/letsencrypt/options-ssl-nginx.conf;
-	#
-	client_max_body_size 8m;
-	proxy_headers_hash_max_size 768;
-	proxy_headers_hash_bucket_size 128;
-	#	
+	include /etc/letsencrypt/options-ssl-nginx.conf;	
 	
 	location / {		
 		proxy_pass	http://docker_varnish;		
@@ -66,9 +74,6 @@ server {
 			
 		#
 		proxy_redirect	off;
-		proxy_buffering	on;
-		proxy_buffer_size	128k;
-		proxy_buffers	100	8k;
 		proxy_connect_timeout	90;
 		proxy_send_timeout	90;
 		proxy_read_timeout	90;
@@ -77,6 +82,81 @@ server {
 		# Mitigate httpoxy attack
 		proxy_set_header Proxy "";        
 	}
+	#
+	location /pub/ {
+		location ~ ^/pub/media/(downloadable|customer|import|theme_customization/.*\.xml) {
+			deny all;
+		}
+		alias /var/www/html/pub/;
+		add_header X-Frame-Options "SAMEORIGIN";
+	}
+	#
+	location /static/ {
+		# Remove signature of the static files that is used to overcome the browser cache
+		location ~ ^/static/version {
+			rewrite ^/static/(version\d*/)?(.*)$ /static/$2 last;
+		}
+
+		location ~* \.(ico|jpg|jpeg|png|gif|svg|js|css|swf|eot|ttf|otf|woff|woff2|json)$ {
+			add_header X-Frame-Options "SAMEORIGIN";
+            
+			if (!-f $request_filename) {
+				rewrite ^/static/(version\d*/)?(.*)$ /static.php?resource=$2 last;
+			}
+		}
+		location ~* \.(zip|gz|gzip|bz2|csv|xml)$ {
+			add_header X-Frame-Options "SAMEORIGIN";
+
+			if (!-f $request_filename) {
+				rewrite ^/static/(version\d*/)?(.*)$ /static.php?resource=$2 last;
+			}
+		}
+		if (!-f $request_filename) {
+			rewrite ^/static/(version\d*/)?(.*)$ /static.php?resource=$2 last;
+		}
+		add_header X-Frame-Options "SAMEORIGIN";
+    }
+	#
+	location /media/ {
+		try_files $uri /get.php$is_args$args;
+
+		location ~ ^/media/theme_customization/.*\.xml {
+			deny all;
+		}
+
+		location ~* \.(ico|jpg|jpeg|png|gif|svg|js|css|swf|eot|ttf|otf|woff|woff2)$ {
+			add_header X-Frame-Options "SAMEORIGIN";
+			try_files $uri /get.php$is_args$args;
+		}
+		location ~* \.(zip|gz|gzip|bz2|csv|xml)$ {
+			add_header X-Frame-Options "SAMEORIGIN";
+			try_files $uri $uri/ /get.php$is_args$args;
+		}
+		add_header X-Frame-Options "SAMEORIGIN";
+    }
+	#
+	location /media/customer/ {
+		deny all;
+	}
+	
+	location /media/downloadable/ {
+		deny all;
+	}
+
+	location /media/import/ {
+		deny all;
+	}
+    
+	location /errors/ {
+		location ~* \.xml$ {
+			deny all;
+		}
+	}
+	#
+	location /nginx_status {
+		stub_status	on;
+		access_log	off;
+    }
 	#
 	# deny access to .htaccess vb. files, if Apache's document root
 	location ~/\. {
@@ -109,8 +189,7 @@ server {
 	#
 	server_name ${NGINX_HOST} www.${NGINX_HOST};
 	#
-	
-	root /var/www/html/pub;
+
 	index	index.php;
 	
 	location / {
@@ -119,12 +198,21 @@ server {
 	
 	location ~ \.php$ {
 		#NOTE: You should have "cgi.fix_pathinfo = 0;" in php.ini
+		fastcgi_read_timeout 600s;
+		fastcgi_connect_timeout 600s;
+		fastcgi_param  PHP_VALUE "max_execution_time=18000";
 		include	fastcgi_params;
 		fastcgi_intercept_errors	on;
 		fastcgi_pass	docker_magento;
 		#The following parameter can be also included in fastcgi_params file
 		fastcgi_param	SCRIPT_FILENAME	$document_root$fastcgi_script_name;
 	}
+	#
+	location ~ ^/(status|ping)$ {
+        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+		include	fastcgi_params;
+        fastcgi_pass	docker_magento;
+    }
 	#
 	access_log off;
 	error_log  /var/log/nginx/${NGINX_HOST}-81.error.log error;
@@ -150,9 +238,6 @@ server {
 			
 		#
 		proxy_redirect	off;
-		proxy_buffering	on;
-		proxy_buffer_size	128k;
-		proxy_buffers	100	8k;
 		proxy_connect_timeout	90;
 		proxy_send_timeout	90;
 		proxy_read_timeout	90;
@@ -186,9 +271,6 @@ server {
 			
 		#
 		proxy_redirect	off;
-		proxy_buffering	on;
-		proxy_buffer_size	128k;
-		proxy_buffers	100	8k;
 		proxy_connect_timeout	90;
 		proxy_send_timeout	90;
 		proxy_read_timeout	90;
