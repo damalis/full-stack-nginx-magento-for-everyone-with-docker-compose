@@ -110,7 +110,7 @@ server {
 	server_name ${NGINX_HOST} www.${NGINX_HOST};
 	#
 	
-	root /var/www/html;
+	root /var/www/html/pub;
 	index	index.php;
 	
 	location / {
