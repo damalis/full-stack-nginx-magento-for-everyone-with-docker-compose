@@ -12,7 +12,7 @@ Plus, manage docker containers with Portainer.
 #### With this project you can quickly run the following:
 
 - [Magento](https://github.com/magento) - [php-fpm](https://hub.docker.com/_/php?tab=tags&page=1&name=fpm)
-- [webserver (apache2/httpd)](https://hub.docker.com/_/httpd)
+- [webserver (nginx)](https://hub.docker.com/_/nginx)
 - [certbot (letsencrypt)](https://hub.docker.com/r/certbot/certbot)
 - [phpMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin/)
 - [database](https://hub.docker.com/_/mariadb)
