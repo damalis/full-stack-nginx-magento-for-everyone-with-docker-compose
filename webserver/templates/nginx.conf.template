@@ -7,7 +7,7 @@ upstream docker_varnish  {
 }
 
 upstream docker_elasticsearch  {
-	server	webserver:8090;
+	server	elasticsearch:9200;
 }
 
 upstream docker_mail  {
