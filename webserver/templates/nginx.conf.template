@@ -101,6 +101,7 @@ server {
 	autoindex off;
 	charset UTF-8;
 	
+	#
 	location / {
 		try_files $uri /index.php$is_args$args;
 	}	
@@ -179,47 +180,51 @@ server {
 		stub_status	on;
 		access_log	off;
 	}
-	#
+	
 	# deny access to .htaccess vb. files, if Apache's document root
 	location ~/\. {
 		deny all;     
 		log_not_found off;
 	}
-	#
+	
 	location ~ /.well-known {
 		allow all;
 	}
-	#
+	
 	location = /favicon.ico {
 		log_not_found off;
 		access_log off;
 	}
-	#
+	
 	location = /robots.txt {
 		allow all;
 		log_not_found off;
 		access_log off;
 	}
 	#
+	#
 	
 	location ~ \.php$ {
-		#NOTE: You should have "cgi.fix_pathinfo = 0;" in php.ini
 		fastcgi_read_timeout 600s;
 		fastcgi_connect_timeout 600s;
 		fastcgi_param  PHP_VALUE "max_execution_time=18000";
+		fastcgi_index  index.php;
 		include	fastcgi_params;
 		fastcgi_intercept_errors	on;
 		fastcgi_pass	docker_magento;
 		#The following parameter can be also included in fastcgi_params file
 		fastcgi_param	SCRIPT_FILENAME	$document_root$fastcgi_script_name;
 	}
-	#
+	
 	location ~ ^/(status|ping)$ {
+		fastcgi_index  index.php;
 		fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
 		include	fastcgi_params;
 		fastcgi_pass	docker_magento;
 	}
 	#
+	#
+	
 	access_log off;
 	error_log  /var/log/nginx/${NGINX_HOST}-81.error.log error;
 }
