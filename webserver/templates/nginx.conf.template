@@ -137,7 +137,7 @@ server {
 			rewrite ^/static/(version\d*/)?(.*)$ /static.php?resource=$2 last;
 		}
 		add_header X-Frame-Options "SAMEORIGIN";
-    }
+	}
 	
 	location /media/ {
 		try_files $uri /get.php$is_args$args;
@@ -218,7 +218,7 @@ server {
         fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
 		include	fastcgi_params;
         fastcgi_pass	docker_magento;
-    }
+	}
 	#
 	access_log off;
 	error_log  /var/log/nginx/${NGINX_HOST}-81.error.log error;
