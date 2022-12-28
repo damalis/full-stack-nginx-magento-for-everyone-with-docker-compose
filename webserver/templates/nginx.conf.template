@@ -86,8 +86,7 @@ server {
 }
 
 server {
-	#listen 81;
-	#listen [::]:81 ipv6only=on;
+	#listen 90;
 	#
 	server_name ${NGINX_HOST} www.${NGINX_HOST};
 	#
@@ -187,10 +186,6 @@ server {
 		log_not_found off;
 	}
 	
-	location ~ /.well-known {
-		allow all;
-	}
-	
 	location = /favicon.ico {
 		log_not_found off;
 		access_log off;
@@ -216,6 +211,20 @@ server {
 		fastcgi_param	SCRIPT_FILENAME	$document_root$fastcgi_script_name;
 	}
 	
+	location ~* ^/dev/tests/acceptance/utils($|/) {
+		root $MAGE_ROOT;
+		location ~ ^/dev/tests/acceptance/utils/command.php {
+			if ($MFTF_UTILS = 0) {
+				return 405;
+			}
+
+			fastcgi_pass   docker_magento;
+			fastcgi_index  index.php;
+			fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+			include        fastcgi_params;
+		}
+	}
+	
 	location ~ ^/(status|ping)$ {
 		fastcgi_index  index.php;
 		fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
@@ -223,10 +232,8 @@ server {
 		fastcgi_pass	docker_magento;
 	}
 	#
-	#
-	
 	access_log off;
-	error_log  /var/log/nginx/${NGINX_HOST}-81.error.log error;
+	error_log  /var/log/nginx/${NGINX_HOST}-90.error.log error;
 }
 
 server {
@@ -265,8 +272,13 @@ server {
 server {
 	#listen 443 ssl http2;
 	#
-	server_name mail.${NGINX_HOST};
+	#server_name mail.${NGINX_HOST};
 	#
+	#ssl_certificate /etc/letsencrypt/live/${NGINX_HOST}/fullchain.pem;
+	#ssl_certificate_key /etc/letsencrypt/live/${NGINX_HOST}/privkey.pem;
+	#ssl_trusted_certificate /etc/letsencrypt/live/${NGINX_HOST}/chain.pem;
+	#ssl_dhparam /etc/letsencrypt/ssl-dhparam.pem;
+	include /etc/letsencrypt/options-ssl-nginx.conf;
 	
 	location / {		
 		proxy_pass	http://docker_mail;		
