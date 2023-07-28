@@ -49,7 +49,7 @@ The following requirements and recommendations apply when running Elasticsearch 
 
 #### 2 GB RAM
 
-Upgrading the applications and extensions you obtain from the Commerce Marketplace and other sources can require up to 2 GB of RAM. If you are using a system with less than 2 GB of RAM, we recommend you create a [swap file](https://www.digitalocean.com/community/tutorials/how-to-add-swap-space-on-ubuntu-20-04); otherwise, your upgrade might fail.
+Upgrading the applications and extensions you obtain from the Commerce Marketplace and other sources can require up to 2 GB of RAM. If you are using a system with less than 4 GB of RAM, we recommend you create a [swap file](https://www.digitalocean.com/community/tutorials/how-to-add-swap-space-on-ubuntu-20-04); otherwise, your upgrade might fail.
 
 #### Contents:
 
@@ -239,6 +239,25 @@ You should see the "Luma..." page in your browser. If not, please check if your 
 https://example.com
 ```
 
+How to retrieve admin URI?
+
+You can get it from app/etc/env.php file,
+
+You have to get frontname from this file and suffix in your base url.
+
+```
+'backend' => 
+  array (
+    'frontName' => 'admin',
+  ),
+```
+
+Or
+
+```
+bin/magento info:adminuri
+```
+
 ```
 Username: admin
 Password: admin123
@@ -246,7 +265,16 @@ Password: admin123
 
 #### How to Disable 2F Authentication in Magento?
 
-exec ```bin/magento module:disable Magento_TwoFactorAuth  --clear-static-content``` in magento container.
+exec 
+```
+bin/magento module:disable {Magento_AdminAdobeImsTwoFactorAuth,Magento_TwoFactorAuth} --clear-static-content
+bin/magento setup:upgrade
+bin/magento setup:di:compile
+bin/magento setup:static-content:deploy -f
+bin/magento indexer:reindex
+bin/magento cache:flush
+```
+in magento container.
 
 add or remove code in the ./php-fpm/php/conf.d/security.ini file for custom php.ini configurations
 
