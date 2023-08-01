@@ -268,11 +268,11 @@ Password: admin123
 exec 
 ```
 bin/magento module:disable {Magento_AdminAdobeImsTwoFactorAuth,Magento_TwoFactorAuth} --clear-static-content
-bin/magento setup:upgrade
 bin/magento setup:di:compile
 bin/magento setup:static-content:deploy -f
 bin/magento indexer:reindex
 bin/magento cache:flush
+bin/magento setup:upgrade
 ```
 in magento container.
 
