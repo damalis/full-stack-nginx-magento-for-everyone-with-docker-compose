@@ -362,6 +362,8 @@ add or remove code in the ```./webserver/templates/nginx.conf.template``` file f
 
 [https://mariadb.com/kb/en/configuring-mariadb-with-option-files/](https://mariadb.com/kb/en/configuring-mariadb-with-option-files/)
 
+[https://dev.mysql.com/doc/refman/8.3/en/](https://dev.mysql.com/doc/refman/8.3/en/)
+
 #### Redis
 
 you can usually find your Redis configuration in the following file: ```./redis/redis.conf```
