@@ -6,7 +6,6 @@ services:
         depends_on:
             database:
                 condition: service_healthy
-            - elasticsearch
         image: ${PHP_IMAGE_NAME}
         container_name: magento
         networks:
