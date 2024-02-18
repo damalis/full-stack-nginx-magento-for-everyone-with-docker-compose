@@ -45,6 +45,9 @@ services:
             bin/magento config:set --scope=default --scope-code=0 system/full_page_cache/caching_application 2 && bin/magento indexer:reindex; fi; grep -qe 'date.timezone = ${LOCAL_TIMEZONE}' ${PHP_INI_DIR_PREFIX}/php/conf.d/security.ini || echo 'date.timezone = ${LOCAL_TIMEZONE}' >> ${PHP_INI_DIR_PREFIX}/php/conf.d/security.ini; php-fpm"
 
     webserver:
+        depends_on:
+            magento:
+                condition: service_healthy
         image: nginx:stable
         container_name: webserver
         networks:
@@ -153,7 +156,6 @@ services:
 
     database:
         depends_on:
-            - webserver
             - elasticsearch
             - redis
             - mail
@@ -214,8 +216,7 @@ services:
 
     varnish:
         depends_on:
-            magento:
-                condition: service_healthy
+            - webserver
         image: varnish:${VARNISH_VERSION}
         container_name: varnish
         networks:
