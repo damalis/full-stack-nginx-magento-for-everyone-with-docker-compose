@@ -6,6 +6,7 @@ backend default {
     .host = "webserver";
     .port = "90";
     .first_byte_timeout = 600s;
+    .connect_timeout = 2s;
     .probe = {
         .url = "/health_check.php";
         .timeout = 2s;
@@ -19,7 +20,7 @@ backend default {
 acl purge {
     "webserver";
     "mageneto";
-	"localhost";
+    "localhost";
     "127.0.0.1";
     "::1";
 }
