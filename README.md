@@ -58,7 +58,7 @@ Plus, manage docker containers with Portainer.
 - [valkey](https://hub.docker.com/r/valkey/valkey)
 - [varnish](https://hub.docker.com/_/varnish)
 - [opensearch](https://hub.docker.com/r/opensearchproject/opensearch)
-- [mailhog](https://github.com/mailhog)
+- [MailHog](https://github.com/mailhog)
 - [backup](https://hub.docker.com/r/offen/docker-volume-backup)
 
 #### For certbot (letsencrypt) certificate:
